@@ -303,9 +303,9 @@ export function useSubmission() {
 }
 
 /** Runs a state change, reports the outcome and returns the created record (or null). */
-export function save<T>(fn: (db: Parameters<typeof commit>[0] extends (d: infer D) => unknown ? D : never, key: string) => { db: never; result?: T }, message: string, key?: string): T | null {
+export function save<T>(fn: (db: DB) => { db: DB; result?: T }, message: string): T | null {
   try {
-    const result = commit((db) => fn(db, key ?? "")) as T | undefined;
+    const result = commit(fn) as T | undefined;
     toast.success(message);
     return result ?? null;
   } catch (e) {
