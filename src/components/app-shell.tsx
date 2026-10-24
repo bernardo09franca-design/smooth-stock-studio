@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useHydrated, useRouterState } from "@tanstack/react-router";
 import {
   ClipboardList,
   LayoutDashboard,
@@ -73,7 +73,7 @@ function Brand({ name }: { name: string }) {
   return (
     <div className="flex items-center gap-3">
       <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft">
-        <Sparkles className="size-4.5" />
+        <Sparkles className="size-4" />
       </span>
       <span className="min-w-0">
         <span className="font-display block truncate text-base leading-tight font-semibold">{name}</span>
@@ -84,23 +84,26 @@ function Brand({ name }: { name: string }) {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const hydrated = useHydrated();
   const db = useDB();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
 
+  const businessName = hydrated ? db.settings.businessName : "Meu Estúdio";
   const stock = stockByProduct(db);
-  const lowStock = db.products.filter((p) => {
-    if (!p.active) return false;
-    const s = stock.get(p.id);
-    const status = stockStatus(p, s?.quantity ?? 0);
-    return status === "baixo" || status === "sem_estoque" || status === "negativo";
-  }).length;
+  const lowStock = hydrated
+    ? db.products.filter((p) => {
+        if (!p.active) return false;
+        const status = stockStatus(p, stock.get(p.id)?.quantity ?? 0);
+        return status !== "ok";
+      }).length
+    : 0;
 
   return (
     <div className="min-h-screen bg-background lg:grid lg:grid-cols-[18rem_minmax(0,1fr)]">
       <aside className="sticky top-0 hidden h-screen flex-col border-r border-sidebar-border bg-sidebar px-4 py-6 lg:flex">
         <div className="px-2">
-          <Brand name={db.settings.businessName} />
+          <Brand name={businessName} />
         </div>
         <div className="mt-8 min-h-0 flex-1 overflow-y-auto">
           <NavList pathname={pathname} lowStock={lowStock} />
@@ -113,22 +116,19 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className="flex min-w-0 flex-col">
         <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur lg:hidden">
-          <Brand name={db.settings.businessName} />
+          <Brand name={businessName} />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger className="inline-flex size-9 items-center justify-center rounded-lg border bg-card text-foreground shadow-soft">
-              <Menu className="size-4.5" />
+              <Menu className="size-4" />
               <span className="sr-only">Abrir menu</span>
             </SheetTrigger>
             <SheetContent side="right" className="w-[19rem] bg-sidebar p-0">
               <SheetHeader className="border-b px-4 py-4 text-left">
-                <SheetTitle className="font-display text-base">{db.settings.businessName}</SheetTitle>
+                <SheetTitle className="font-display text-base">{businessName}</SheetTitle>
                 <SheetDescription className="text-xs">Navegação do sistema</SheetDescription>
               </SheetHeader>
               <div className="px-3 py-4">
-                <NavList
-                  pathname={pathname}
-                  lowStock={lowStock}
-                />
+                <NavList pathname={pathname} lowStock={lowStock} />
               </div>
             </SheetContent>
           </Sheet>
