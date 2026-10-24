@@ -19,7 +19,7 @@ import { commit } from "@/lib/storage/db";
 import { uid } from "@/lib/services/common";
 import { cn } from "@/lib/utils";
 import { PERIODS, type PeriodKey } from "@/lib/calculations/dates";
-import type { Product } from "@/types";
+import type { DB, Product } from "@/types";
 import type { StockStatus } from "@/lib/calculations/stock";
 
 /* Shared building blocks so every screen keeps the same rhythm and the same
@@ -31,8 +31,8 @@ export function PageHeader({
   actions,
 }: {
   title: string;
-  description?: string;
-  actions?: ReactNode;
+  description?: string | undefined;
+  actions?: ReactNode | undefined;
 }) {
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -52,11 +52,11 @@ export function Panel({
   children,
   className,
 }: {
-  title?: string;
-  description?: string;
-  action?: ReactNode;
+  title?: string | undefined;
+  description?: string | undefined;
+  action?: ReactNode | undefined;
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
 }) {
   return (
     <section className={cn("rounded-xl border bg-card p-4 shadow-soft sm:p-5", className)}>
@@ -82,8 +82,8 @@ export function StatCard({
 }: {
   label: string;
   value: string;
-  hint?: string;
-  tone?: "default" | "success" | "warning" | "destructive";
+  hint?: string | undefined;
+  tone?: "default" | "success" | "warning" | "destructive" | undefined;
 }) {
   const toneClass =
     tone === "success"
@@ -108,8 +108,8 @@ export function EmptyState({
   action,
 }: {
   title: string;
-  description?: string;
-  action?: ReactNode;
+  description?: string | undefined;
+  action?: ReactNode | undefined;
 }) {
   return (
     <div className="rounded-xl border border-dashed bg-muted/40 px-6 py-10 text-center">
@@ -128,10 +128,10 @@ export function Field({
   className,
 }: {
   label: string;
-  htmlFor?: string;
-  hint?: string;
+  htmlFor?: string | undefined;
+  hint?: string | undefined;
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
 }) {
   return (
     <div className={cn("space-y-1.5", className)}>
@@ -149,12 +149,12 @@ const STATUS_TONE: Record<StockStatus, { className: string; label: string }> = {
   negativo: { className: "border-destructive/30 bg-destructive/10 text-destructive", label: "Negativo" },
 };
 
-export function StockBadge({ status, label }: { status: StockStatus; label?: string }) {
+export function StockBadge({ status, label }: { status: StockStatus; label?: string | undefined }) {
   const tone = STATUS_TONE[status];
   return <Badge className={cn("border font-medium", tone.className)}>{label ?? tone.label}</Badge>;
 }
 
-export function StatusPill({ tone = "muted", children }: { tone?: "muted" | "success" | "warning" | "destructive" | "info"; children: ReactNode }) {
+export function StatusPill({ tone = "muted", children }: { tone?: "muted" | "success" | "warning" | "destructive" | "info" | undefined; children: ReactNode }) {
   const map = {
     muted: "border-border bg-muted text-muted-foreground",
     success: "border-success/30 bg-success-soft text-success",
@@ -173,10 +173,10 @@ export function BarRow({
   tone = "primary",
 }: {
   label: string;
-  detail?: string;
+  detail?: string | undefined;
   value: number;
   max: number;
-  tone?: "primary" | "success" | "warning";
+  tone?: "primary" | "success" | "warning" | undefined;
 }) {
   const pct = max > 0 ? Math.min(100, Math.max(2, (value / max) * 100)) : 0;
   const bar = tone === "success" ? "bg-success" : tone === "warning" ? "bg-warning" : "bg-primary";
@@ -201,8 +201,8 @@ export function SearchInput({
 }: {
   value: string;
   onChange: (v: string) => void;
-  placeholder?: string;
-  className?: string;
+  placeholder?: string | undefined;
+  className?: string | undefined;
 }) {
   return (
     <div className={cn("relative", className)}>
@@ -239,8 +239,8 @@ export function SelectField({
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
-  placeholder?: string;
-  className?: string;
+  placeholder?: string | undefined;
+  className?: string | undefined;
 }) {
   return (
     <Select value={value} onValueChange={onChange}>
@@ -268,11 +268,11 @@ export function ProductSelect({
   products: Product[];
   value: string;
   onChange: (v: string) => void;
-  placeholder?: string;
-  className?: string;
+  placeholder?: string | undefined;
+  className?: string | undefined;
 }) {
   return (
-    <Select value={value || undefined} onValueChange={onChange}>
+    <Select value={value || ""} onValueChange={onChange}>
       <SelectTrigger className={className}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
@@ -386,12 +386,12 @@ export function ConfirmDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
-  description?: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
+  description?: string | undefined;
+  confirmLabel?: string | undefined;
+  cancelLabel?: string | undefined;
   tone?: "primary" | "destructive";
   onConfirm: () => void;
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
