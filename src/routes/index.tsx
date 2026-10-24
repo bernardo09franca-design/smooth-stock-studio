@@ -407,7 +407,7 @@ function Dashboard() {
             <p className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">
               <AlertTriangle className="mt-0.5 size-4 shrink-0" />
               Existem produtos com saldo negativo. Isso acontece quando o consumo registrado foi maior do que a entrada
-             已知. Revise as compras ou faça um ajuste de estoque em Produtos.
+              já lançada. Revise as compras ou faça um ajuste de estoque em Produtos.
             </p>
           ) : null}
         </div>
