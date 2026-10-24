@@ -71,7 +71,8 @@ export const Route = createFileRoute("/produtos")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  validateSearch: (raw: Record<string, unknown>) => ({ new: typeof raw.new === "string" ? raw.new : undefined }),
+  validateSearch: (raw: Record<string, unknown>): { new?: string } =>
+    typeof raw["new"] === "string" ? { new: raw["new"] } : {},
   component: ProductsPage,
 });
 
@@ -97,7 +98,7 @@ function ProductsPage() {
   useEffect(() => {
     if (search.new === "1") {
       setEditing("new");
-      void navigate({ to: "/produtos", search: { new: undefined } });
+      void navigate({ to: "/produtos", search: {} });
     }
   }, [search.new, navigate]);
 

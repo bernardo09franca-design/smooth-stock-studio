@@ -62,7 +62,8 @@ export const Route = createFileRoute("/compras")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  validateSearch: (raw: Record<string, unknown>) => ({ new: typeof raw.new === "string" ? raw.new : undefined }),
+  validateSearch: (raw: Record<string, unknown>): { new?: string } =>
+    typeof raw["new"] === "string" ? { new: raw["new"] } : {},
   component: PurchasesPage,
 });
 
@@ -96,7 +97,7 @@ function PurchasesPage() {
   useEffect(() => {
     if (search.new === "1") {
       setForm({ mode: "new" });
-      void navigate({ to: "/compras", search: { new: undefined } });
+      void navigate({ to: "/compras", search: {} });
     }
   }, [search.new, navigate]);
 
