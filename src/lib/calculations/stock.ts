@@ -39,7 +39,7 @@ export function computeStock(movements: StockMovement[]): StockState {
     } else if (q < 0 && m.movementType === "reversao" && m.unitCost !== null) {
       const remaining = qty + q;
       if (remaining > 0 && avg !== null) {
-        const v = avg * qty + q * m.unitCost;
+        const v: number = avg * qty + q * m.unitCost;
         avg = v > 0 ? v / remaining : avg;
       }
       qty = remaining;

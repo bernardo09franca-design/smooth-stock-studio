@@ -24,12 +24,13 @@ export function computePurchase(items: PurchaseItemInput[], shippingCents = 0) {
   const nets = items.map((i) => i.totalPaid - i.discount);
   const shares = allocateCents(shippingCents, nets.map((n) => Math.max(n, 0)));
   const computed: ComputedItem[] = items.map((i, idx) => {
-    const net = nets[idx];
-    const effective = net + shares[idx];
+    const net = nets[idx] ?? 0;
+    const share = shares[idx] ?? 0;
+    const effective = net + share;
     const baseQuantity = i.packageQuantity * toBase(i.contentQuantity, i.contentUnit);
     return {
       net,
-      allocatedShipping: shares[idx],
+      allocatedShipping: share,
       effective,
       unitCost: i.packageQuantity > 0 ? effective / i.packageQuantity : 0,
       baseQuantity,

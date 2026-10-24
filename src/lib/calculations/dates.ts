@@ -14,7 +14,7 @@ export function isValidDate(s: string): boolean {
 export function formatDate(s: string | null | undefined): string {
   if (!s) return "—";
   const ymd = s.slice(0, 10);
-  const [y, m, d] = ymd.split("-");
+  const [y = "", m = "", d = ""] = ymd.split("-");
   if (!y || !m || !d) return "—";
   return `${d}/${m}/${y}`;
 }
@@ -32,7 +32,7 @@ export function monthKey(date: string): string {
 }
 export function monthLabel(key: string): string {
   const [y, m] = key.split("-");
-  return `${MONTHS[Number(m) - 1]}/${y.slice(2)}`;
+  return `${MONTHS[Number(m) - 1]}/${(y ?? "").slice(2)}`;
 }
 
 export type PeriodKey = "1m" | "3m" | "6m" | "12m" | "all";
@@ -48,7 +48,7 @@ export const PERIODS: { key: PeriodKey; label: string }[] = [
 export function periodStart(p: PeriodKey, today = todayISO()): string {
   if (p === "all") return "0000-01-01";
   const months = { "1m": 0, "3m": 2, "6m": 5, "12m": 11 }[p];
-  const [y, m] = today.split("-").map(Number);
+  const [y = 0, m = 1] = today.split("-").map(Number);
   const d = new Date(y, m - 1 - months, 1);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
 }
@@ -56,8 +56,8 @@ export function periodStart(p: PeriodKey, today = todayISO()): string {
 /** List of month keys between two dates inclusive. */
 export function monthRange(from: string, to: string): string[] {
   const out: string[] = [];
-  let [y, m] = from.slice(0, 7).split("-").map(Number);
-  const [ty, tm] = to.slice(0, 7).split("-").map(Number);
+  let [y = 0, m = 1] = from.slice(0, 7).split("-").map(Number);
+  const [ty = 0, tm = 1] = to.slice(0, 7).split("-").map(Number);
   while (y < ty || (y === ty && m <= tm)) {
     out.push(`${y}-${String(m).padStart(2, "0")}`);
     m++;

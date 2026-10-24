@@ -59,7 +59,7 @@ export interface PriceStats {
 
 export function priceStats(obs: PriceObservation[]): PriceStats {
   const last = obs.at(-1) ?? null;
-  const previous = obs.length > 1 ? obs[obs.length - 2] : null;
+  const previous = obs.length > 1 ? (obs[obs.length - 2] ?? null) : null;
   let min: PriceObservation | null = null;
   let max: PriceObservation | null = null;
   for (const o of obs) {

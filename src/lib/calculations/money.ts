@@ -42,7 +42,7 @@ export function allocateCents(total: number, weights: number[]): number[] {
   const order = raw.map((r, i) => ({ i, frac: r - Math.floor(r) })).sort((a, b) => b.frac - a.frac);
   for (const o of order) {
     if (rest <= 0) break;
-    floors[o.i] += 1;
+    floors[o.i] = (floors[o.i] ?? 0) + 1;
     rest -= 1;
   }
   return floors;
