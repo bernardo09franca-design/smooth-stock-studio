@@ -33,8 +33,8 @@ export interface Purchase {
   shippingCents: number; // extra acquisition costs, distributed proportionally across items
   totalAmount: number; // cents (items net + shipping)
   status: PurchaseStatus;
-  replacesId?: string;
-  replacedById?: string;
+  replacesId?: string | undefined;
+  replacedById?: string | undefined;
   createdAt: string;
   updatedAt: string;
 }
@@ -101,7 +101,7 @@ export interface ServiceSession {
   quantity: number;
   status: SessionStatus;
   notes: string;
-  replacesId?: string;
+  replacesId?: string | undefined;
   createdAt: string;
 }
 

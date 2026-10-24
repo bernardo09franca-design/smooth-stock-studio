@@ -46,7 +46,7 @@ function buildPurchase(db: DB, input: PurchaseInput, replacesId?: string) {
   };
   const items: PurchaseItem[] = input.items.map((it, i) => {
     const p = db.products.find((x) => x.id === it.productId)!;
-    const c = calc.items[i];
+    const c = calc.items[i]!;
     return {
       id: uid(),
       purchaseId: purchase.id,

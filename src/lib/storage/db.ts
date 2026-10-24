@@ -60,6 +60,7 @@ export function migrate(raw: unknown): DB {
   const parsed = dbSchema.safeParse(merged);
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
+    if (!issue) throw new Error("Dados inválidos.");
     throw new Error(`Dados inválidos em "${issue.path.join(".")}": ${issue.message}`);
   }
   return parsed.data as DB;
