@@ -213,3 +213,20 @@ export function correctSession(db: DB, id: string, input: SessionInput, submissi
     result: session,
   };
 }
+
+/** A procedure can only be removed while it has no sessions and no recipe in use elsewhere. */
+export function deleteProcedure(db: DB, id: string): { db: DB } {
+  const proc = db.procedures.find((p) => p.id === id);
+  assert(proc, "Procedimento não encontrado.");
+  assert(
+    !db.sessions.some((s) => s.procedureId === id),
+    "Este procedimento tem atendimentos registrados. Inative-o em vez de excluir.",
+  );
+  return {
+    db: {
+      ...db,
+      procedures: db.procedures.filter((p) => p.id !== id),
+      recipeItems: db.recipeItems.filter((r) => r.procedureId !== id),
+    },
+  };
+}
