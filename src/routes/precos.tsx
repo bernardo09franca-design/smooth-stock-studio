@@ -191,8 +191,7 @@ function PricesPage() {
                           <TableHead>Data</TableHead>
                           <TableHead>Fornecedor</TableHead>
                           <TableHead className="text-right">Embalagens</TableHead>
-                          <TableHead className="text-right">Conteúdo</TableHead>
-                          <TableHead className="text-right">Custo/embalagem</TableHead>
+                          <TableHead className="text-right">Custo embalagem</TableHead>
                           <TableHead className="text-right">Custo/{base}</TableHead>
                           <TableHead className="text-right">Variação</TableHead>
                           <TableHead className="text-right">Total</TableHead>
@@ -209,7 +208,6 @@ function PricesPage() {
                               <TableCell className="numeric">{formatDate(o.date)}</TableCell>
                               <TableCell className="font-medium">{o.supplier || "Sem fornecedor"}</TableCell>
                               <TableCell className="text-right numeric">{formatNumber(o.packageQuantity, 2)}</TableCell>
-                              <TableCell className="text-right numeric">{o.packageContentLabel}</TableCell>
                               <TableCell className="text-right numeric">{formatMoney(o.packageCost)}</TableCell>
                               <TableCell className="text-right numeric">{formatMoney(o.normalizedUnitCost)}</TableCell>
                               <TableCell className="text-right">
