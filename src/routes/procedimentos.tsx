@@ -367,7 +367,8 @@ function ProcedureForm({ procedure, onClose }: { procedure: Procedure | null; on
                         onChange={(e) => updateRow(i, { quantity: e.target.value })}
                         placeholder="0"
                       />
-                      <SelectFieldLocal
+                      <SelectField
+                        className="w-full"
                         value={r.unit}
                         onChange={(v) => updateRow(i, { unit: v as ContentUnit })}
                         options={compatibleUnits(p?.contentUnit ?? "ml").map((u) => ({ value: u, label: UNIT_LABEL[u] }))}
@@ -402,32 +403,6 @@ function ProcedureForm({ procedure, onClose }: { procedure: Procedure | null; on
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function SelectFieldLocal({
-  value,
-  onChange,
-  options,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  options: { value: string; label: string }[];
-}) {
-  return (
-    <Field label="" className="[&>label]:hidden">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-9 w-full rounded-md border border-input bg-card px-3 text-sm shadow-soft"
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </Field>
   );
 }
 

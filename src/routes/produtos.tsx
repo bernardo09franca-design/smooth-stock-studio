@@ -41,7 +41,7 @@ import {
 import { useDB } from "@/lib/storage/db";
 import { formatDate, todayISO } from "@/lib/calculations/dates";
 import { formatMoney, formatNumber, formatUnitCost } from "@/lib/calculations/money";
-import { CONTENT_UNITS, UNIT_LABEL, baseUnitOf, compatibleUnits, type } from "@/lib/calculations/units";
+import { CONTENT_UNITS, UNIT_LABEL, baseUnitOf, compatibleUnits } from "@/lib/calculations/units";
 import {
   adjustStock,
   createProduct,
@@ -462,12 +462,7 @@ function ProductForm({ product, onClose }: { product: Product | null; onClose: (
             <Field label="Estoque inicial (embalagens)" hint="Só para quem está começando a usar o sistema agora.">
               <Input inputMode="decimal" value={f.initialStock} onChange={(e) => set("initialStock", e.target.value)} />
             </Field>
-          ) : (
-            <label className="flex items-center gap-3 self-end pb-2 text-sm">
-              <Switch checked={f.active} onCheckedChange={(c) => set("active", Boolean(c))} />
-              Produto ativo
-            </label>
-          )}
+          ) : null}
         </div>
 
         <DialogFooter className="gap-2 sm:justify-between">
