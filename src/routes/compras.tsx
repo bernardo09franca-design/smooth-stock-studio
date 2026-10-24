@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Download, Pencil, Plus, Trash2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -175,8 +175,8 @@ function PurchasesPage() {
                 </TableHeader>
                 <TableBody>
                   {pager.slice.map((r) => (
-                    <>
-                      <TableRow key={r.purchase.id}>
+                    <Fragment key={r.purchase.id}>
+                      <TableRow>
                         <TableCell>
                           <Button
                             variant="ghost"
@@ -276,7 +276,7 @@ function PurchasesPage() {
                           </TableCell>
                         </TableRow>
                       ) : null}
-                    </>
+                    </Fragment>
                   ))}
                 </TableBody>
               </Table>
@@ -310,7 +310,7 @@ function PurchasesPage() {
 function PurchaseForm({ original, onClose }: { original: Purchase | null; onClose: () => void }) {
   const db = useDB();
   const { key, reset } = useSubmission();
-  const products = useMemo(() => db.products.filter((p) => p.active || p.id === ""), [db.products]);
+  const products = useMemo(() => db.products.filter((p) => p.active), [db.products]);
   const byId = useMemo(() => new Map(db.products.map((p) => [p.id, p])), [db.products]);
 
   const [date, setDate] = useState(original?.purchaseDate ?? todayISO());
