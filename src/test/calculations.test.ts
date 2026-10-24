@@ -111,10 +111,11 @@ describe("purchase cost math", () => {
     const { items: computed, total } = computePurchase(items, 100);
     expect(computed[0]?.net).toBe(2500);
     expect(computed[1]?.net).toBe(6000);
-    expect((computed[0]?.allocatedShipping ?? 0) + (computed[1]?.allocatedShipping ?? 0)).toBe(100);
+    expect(computed[0]?.allocatedShipping).toBe(29);
+    expect(computed[1]?.allocatedShipping).toBe(71);
     expect(total).toBe(2500 + 6000 + 100);
-    // cost per ml includes the shipping share: (2500 + 33) / 500
-    expect(computed[0]?.normalizedUnitCost).toBeCloseTo((2500 + 33) / 500, 6);
+    // cost per ml includes the shipping share: (2500 + 29) / 500
+    expect(computed[0]?.normalizedUnitCost).toBeCloseTo(2529 / 500, 6);
   });
 
   it("does not count the same purchase value twice", () => {
@@ -185,18 +186,25 @@ describe("stock", () => {
 
 describe("price history", () => {
   it("compares different package sizes on a common base", () => {
-    const { db, product } = withPurchase({
-      items: [
-        { productId: "x", packageQuantity: 1, contentQuantity: 500, contentUnit: "ml", totalPaid: 2000, discount: 0 },
-        { productId: "x", packageQuantity: 1, contentQuantity: 1, contentUnit: "l", totalPaid: 3600, discount: 0 },
-      ],
+    const created = createProduct(emptyDB(), productInput());
+    const product = created.db.products[0]!;
+    const first = createPurchase(created.db, {
+      purchaseDate: "2025-01-10",
+      supplier: "Distribuidora",
+      reference: "NF-1",
+      notes: "",
+      shippingCents: 0,
+      items: [{ productId: product.id, packageQuantity: 1, contentQuantity: 500, contentUnit: "ml", totalPaid: 2000, discount: 0 }],
     });
-    const realId = product.id;
-    const fixed: DB = {
-      ...db,
-      purchaseItems: db.purchaseItems.map((i) => ({ ...i, productId: realId })),
-    };
-    const obs = priceObservations(fixed, product);
+    const second = createPurchase(first.db, {
+      purchaseDate: "2025-02-10",
+      supplier: "Distribuidora",
+      reference: "NF-2",
+      notes: "",
+      shippingCents: 0,
+      items: [{ productId: product.id, packageQuantity: 1, contentQuantity: 1, contentUnit: "l", totalPaid: 3600, discount: 0 }],
+    });
+    const obs = priceObservations(second.db, product);
     expect(obs).toHaveLength(2);
     expect(obs[0]?.normalizedUnitCost).toBe(4); // R$ 0,04/ml
     expect(obs[1]?.normalizedUnitCost).toBe(3.6); // R$ 0,036/ml

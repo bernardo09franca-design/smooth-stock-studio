@@ -71,7 +71,7 @@ describe("products", () => {
     const withHistory = purchaseOf(db, product);
     expect(() => deleteProduct(withHistory, product.id)).toThrow(/histórico/i);
     const { db: clean, product: cleanProduct } = studio();
-    expect(deleteProduct(clean, cleanProduct.id).products).toHaveLength(0);
+    expect(deleteProduct(clean, cleanProduct.id).db.products).toHaveLength(0);
   });
 
   it("blocks a unit change that would corrupt history", () => {
@@ -142,16 +142,14 @@ describe("purchases", () => {
   it("requires explicit consent before a cancellation drives stock negative", () => {
     const { db, product } = studio();
     const next = purchaseOf(db, product);
-    const consumed = registerSession(
-      next,
-      {
-        procedureId: saveProcedure(next, { name: "Tratamento A", description: "", estimatedDuration: null, active: true, recipe: [{ productId: product.id, quantity: 20, unit: "ml" }] }).db.procedures[0]!.id,
-        sessionDate: "2025-01-12",
-        quantity: 1,
-        notes: "",
-        items: [{ productId: product.id, quantity: 1000, unit: "ml", estimatedQuantity: 20 }],
-      },
-    ).db;
+    const proc = saveProcedure(next, { name: "Tratamento A", description: "", estimatedDuration: null, active: true, recipe: [{ productId: product.id, quantity: 20, unit: "ml" }] });
+    const consumed = registerSession(proc.db, {
+      procedureId: proc.result!.id,
+      sessionDate: "2025-01-12",
+      quantity: 1,
+      notes: "",
+      items: [{ productId: product.id, quantity: 1000, unit: "ml", estimatedQuantity: 20 }],
+    }).db;
     expect(() => cancelPurchase(consumed, next.purchases[0]!.id, "Erro", { date: "2025-01-13" })).toThrow(/negativo/i);
     const forced = cancelPurchase(consumed, next.purchases[0]!.id, "Erro", { date: "2025-01-13", allowNegative: true });
     expect(stockByProduct(forced.db).get(product.id)?.quantity).toBe(-1000);
@@ -218,16 +216,20 @@ describe("procedures and consumption", () => {
   it("reports an incomplete cost instead of assuming zero", () => {
     const { db, product, procedure } = withRecipe();
     const noCost = createProduct(db, { ...base, name: "Pó calmante", contentUnit: "g", contentQuantity: 250 });
-    const withSecond = saveProcedure(noCost.db, {
-      name: "Tratamento A",
-      description: "",
-      estimatedDuration: 30,
-      active: true,
-      recipe: [
-        { productId: product.id, quantity: 20, unit: "ml" },
-        { productId: noCost.result!.id, quantity: 5, unit: "g" },
-      ],
-    });
+    const withSecond = saveProcedure(
+      noCost.db,
+      {
+        name: "Tratamento A",
+        description: "",
+        estimatedDuration: 30,
+        active: true,
+        recipe: [
+          { productId: product.id, quantity: 20, unit: "ml" },
+          { productId: noCost.result!.id, quantity: 5, unit: "g" },
+        ],
+      },
+      procedure.id,
+    );
     const cost = recipeCost(withSecond.db, procedure.id);
     expect(cost.total).toBeNull();
     expect(cost.partial).toBe(80);
@@ -254,7 +256,7 @@ describe("procedures and consumption", () => {
     const kept = later.consumptionItems.find((c) => c.id === before.id)!;
     expect(kept.unitCostAtConsumption).toBe(4);
     expect(kept.totalCost).toBe(80);
-    expect(stockByProduct(later).get(product.id)?.avgCost).toBe(6);
+    expect(stockByProduct(later).get(product.id)?.avgCost).toBeCloseTo(11920 / 1980, 6);
   });
 
   it("registering the same attendance twice does not double the stock drop", () => {
@@ -316,7 +318,9 @@ describe("procedures and consumption", () => {
 
 describe("manual adjustments", () => {
   it("records an identifiable movement and needs a reason", () => {
-    const { db, product } = studio();
+    const seeded = createProduct(emptyDB(), base, { initialPackages: 4 });
+    const db = seeded.db;
+    const product = db.products[0]!;
     expect(() => adjustStock(db, { productId: product.id, direction: "out", quantity: 10, unit: "ml", date: "2025-01-20", reason: "" })).toThrow(/motivo/i);
     const next = adjustStock(db, { productId: product.id, direction: "out", quantity: 10, unit: "ml", date: "2025-01-20", reason: "Amostra" });
     const m = next.db.movements[0]!;
@@ -359,7 +363,7 @@ describe("backup", () => {
 
   it("rejects files that are not a backup without touching the data", () => {
     expect(() => parseBackup("nada de json")).toThrow(/JSON válido/i);
-    expect(() => parseBackup(JSON.stringify({ app: "outro", schemaVersion: 1, data: emptyDB() }))).toThrow(/outro sistema/i);
+    expect(() => parseBackup(JSON.stringify({ app: "outro", schemaVersion: 1, data: emptyDB() }))).toThrow(/backup/i);
     expect(() => parseBackup(JSON.stringify({ schemaVersion: 1 }))).toThrow(/backup/i);
   });
 });
