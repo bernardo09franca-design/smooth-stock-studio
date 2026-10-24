@@ -323,7 +323,7 @@ describe("manual adjustments", () => {
     const product = db.products[0]!;
     expect(() => adjustStock(db, { productId: product.id, direction: "out", quantity: 10, unit: "ml", date: "2025-01-20", reason: "" })).toThrow(/motivo/i);
     const next = adjustStock(db, { productId: product.id, direction: "out", quantity: 10, unit: "ml", date: "2025-01-20", reason: "Amostra" });
-    const m = next.db.movements[0]!;
+    const m = next.db.movements.at(-1)!;
     expect(m.movementType).toBe("ajuste_negativo");
     expect(m.quantity).toBe(-10);
     expect(m.notes).toBe("Amostra");
