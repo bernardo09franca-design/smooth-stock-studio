@@ -2,14 +2,9 @@ import type { DB } from "@/types";
 import { formatDate } from "@/lib/calculations/dates";
 import { formatMoney } from "@/lib/calculations/money";
 import { baseUnitOf } from "@/lib/calculations/units";
+import { priceObservations } from "@/lib/calculations/prices";
 import { downloadFile } from "@/lib/services/backup";
-import {
-  MOVEMENT_LABEL,
-  priceObservations,
-  productViews,
-  purchaseRows,
-  type ProductView,
-} from "@/lib/selectors";
+import { MOVEMENT_LABEL, productViews, purchaseRows, type ProductView } from "@/lib/selectors";
 import { recipeCost } from "@/features/procedures/service";
 
 /*
@@ -80,7 +75,11 @@ export function productsCsv(db: DB): string {
 
 export function purchasesCsv(db: DB): string {
   const rows = purchaseRows(db);
-  return toCsv<{ purchase: (typeof rows)[number]["purchase"]; item: (typeof rows)[number]["items"][number] | null }>(
+  type Row = { purchase: (typeof rows)[number]["purchase"]; item: (typeof rows)[number]["items"][number] | null };
+  const flat: Row[] = rows.flatMap<Row>((r) =>
+    r.items.length ? r.items.map((item) => ({ purchase: r.purchase, item })) : [{ purchase: r.purchase, item: null }],
+  );
+  return toCsv<Row>(
     [
       { header: "Data", value: (r) => formatDate(r.purchase.purchaseDate) },
       { header: "Fornecedor", value: (r) => r.purchase.supplier },
@@ -96,7 +95,7 @@ export function purchasesCsv(db: DB): string {
       { header: "Custo por unidade base (R$)", value: (r) => (r.item ? moneyCell(r.item.normalizedUnitCost) : "") },
       { header: "Total da compra (R$)", value: (r) => (r.item ? "" : reais(r.purchase.totalAmount)) },
     ],
-    rows.flatMap((r) => (r.items.length ? r.items.map((item) => ({ purchase: r.purchase, item })) : [{ purchase: r.purchase, item: null }])),
+    flat,
   );
 }
 
@@ -104,7 +103,7 @@ export function consumptionCsv(db: DB, from: string, to: string): string {
   const sessions = db.sessions.filter((s) => s.status === "confirmado" && s.sessionDate >= from && s.sessionDate <= to);
   const byId = new Map(db.products.map((p) => [p.id, p]));
   type Row = { session: (typeof sessions)[number]; item: DB["consumptionItems"][number] | null };
-  const rows: Row[] = sessions.flatMap((session) => {
+  const rows: Row[] = sessions.flatMap<Row>((session) => {
     const items = db.consumptionItems.filter((c) => c.sessionId === session.id);
     return items.length ? items.map((item) => ({ session, item })) : [{ session, item: null }];
   });
@@ -148,7 +147,7 @@ export function priceHistoryCsv(db: DB, productId: string): string {
 export function proceduresCsv(db: DB): string {
   const byId = new Map(db.products.map((p) => [p.id, p]));
   type Row = { procedure: DB["procedures"][number]; recipe: DB["recipeItems"][number] | null };
-  const rows: Row[] = db.procedures.flatMap((procedure) => {
+  const rows: Row[] = db.procedures.flatMap<Row>((procedure) => {
     const recipe = db.recipeItems.filter((r) => r.procedureId === procedure.id);
     return recipe.length ? recipe.map((item) => ({ procedure, recipe: item })) : [{ procedure, recipe: null }];
   });
